@@ -131,7 +131,7 @@ flowchart LR
 
 | Store | Dev (`application-dev.yml`) | Prod (`application-prod.yml`) | Purpose |
 |---|---|---|---|
-| H2 (in-memory) | `jdbc:h2:mem:maint` | — | Dev-only; auto-seeded with 3 tenants |
+| H2 (file-based) | `jdbc:h2:file:./data/maint` | — | Dev-only; persisted to `backend/data/maint.mv.db`; auto-seeded once |
 | PostgreSQL 16 | — | `jdbc:postgresql://${DB_HOST}:5432/maint` | Prod relational data |
 | Redis 7 | — | `redis://${REDIS_HOST}:6379` | Token blacklist, cache, rate-limiting |
 | MinIO | Optional (local filesystem fallback) | `https://${MINIO_HOST}:9000` | File attachments (work order images, reports) |
@@ -142,8 +142,8 @@ The application uses Spring Profiles (`dev` / `prod`) to switch between developm
 
 | Aspect | Dev (`dev`) | Prod (`prod`) |
 |---|---|---|
-| **Database** | H2 in-memory (Flyway + JPA auto-ddl) | PostgreSQL 16 (Flyway migrations only) |
-| **Seeder** | Enabled — creates 3 tenants with locations, users, equipment, and demo data | Disabled — no initial data |
+| **Database** | H2 file-based (`backend/data/maint.mv.db`) | PostgreSQL 16 (Flyway migrations only) |
+| **Seeder** | Enabled (once) — creates 3 tenants with rich test data across all modules | Disabled — no initial data |
 | **Login** | Quick-login card: lists users grouped by tenant and role; single-click auto-login | Standard email+password form |
 | **Redis** | Optional (can fall back to in-memory token store) | Required |
 | **CORS** | Permissive (`*`) | Locked to frontend domain |
@@ -173,10 +173,10 @@ flowchart LR
 The three seeded tenants:
 
 | Tenant | Slug | Users | Profile Data |
-|---|---|---|---|
-| ACME Production | `acme-prod` | admin (all perms), operator (read-only), tech (maintenance) | 2 sites, 4 buildings, 15 assets, 10 PM plans |
-| Globex Manufacturing | `globex-mfg` | admin (all perms), manager (approval) | 1 site, 2 buildings, 8 assets, 5 PM plans |
-| Initech Services | `initech-svc` | admin (all perms) | 1 site, 1 building, 5 assets, 3 PM plans |
+|---|---|---|---|---|
+| ACME Production | `acme-prod` | admin, operator, tech, supervisor, engineer | 3 sites, 4 buildings, 6 zones, 6 floors, 5 categories, 22 assets, 18 WOs, 8 PM plans, 15 parts, 3 vendors, 4 POs, 3 technicians |
+| Globex Manufacturing | `globex-mfg` | admin, manager, tech1, tech2 | 1 site, 2 buildings, 4 zones, 3 floors, 5 categories, 10 assets, 8 WOs, 4 PM plans, 8 parts, 2 vendors, 2 POs, 2 technicians |
+| Initech Services | `initech-svc` | admin, tech | 1 site, 1 building, 2 zones, 2 floors, 5 categories, 6 assets, 4 WOs, 2 PM plans, 5 parts, 1 vendor, 1 PO, 1 technician |
 
 ### Quick-Login Card (Dev Mode)
 
